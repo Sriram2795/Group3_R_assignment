@@ -1,0 +1,202 @@
+---
+title: "Group3 sales forecasting"
+author: "Group3"
+date: "2024-06-13"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+if (!requireNamespace("readxl", quietly = TRUE)) {
+  install.packages("readxl")
+}
+
+library(dplyr)
+library(ggplot2)
+library(readxl)
+
+# Load the dataset
+salesforecasting <- read_excel("C:\\Users\\srira\\Downloads\\salesforecasting.xlsx")
+```
+
+About Dataset
+This dataset offers a valuable resource for businesses operating in the retail furniture sector. By analyzing historical sales data from the superstore dataset, users can gain insights into future sales patterns and trends. This information can be utilized to optimize inventory management strategies, anticipate customer demand, and enhance overall operational efficiency. Whether for retail managers, analysts, or data scientists, this dataset provides a foundation for informed decision-making, helping businesses maintain stability and drive sustained growth in the dynamic retail environment.
+
+```{r Print the structure of your dataset}
+str(salesforecasting)
+```
+
+
+```{r List the variables in your dataset}
+names(salesforecasting)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r Print the top 15 rows of your dataset}
+head(salesforecasting, n=15)
+```
+```{r Write a user defined function using any of the variables from the data set.}
+calculate_total_sales_by_subcategory <- function(df, subcategory) {
+  total_sales <- df %>%
+    filter(salesforecasting$`Sub-Category` == subcategory) %>%
+    summarize(TotalSales = sum(Sales, na.rm = TRUE))
+  return(total_sales)
+}
+
+# Call the function with the dataset and the sub-category "Chairs"
+total_sales_chairs <- calculate_total_sales_by_subcategory(salesforecasting, "Chairs")
+print(total_sales_chairs)
+```
+```{r Use data manipulation techniques and filter rows based on any logical criteria that exist in your dataset.}
+# Define a simple user-defined function to filter the data by state and calculate total profit
+total_profit_by_state <- function(df, state) {
+  # Filter the data for the given state
+  filtered_data <- df %>% filter(salesforecasting$State == state)
+  
+  # Calculate the total profit for the filtered data
+  total_profit <- sum(filtered_data$Profit, na.rm = TRUE)
+  
+  return(total_profit)
+}
+
+# Call the function with the dataset and the state "California"
+total_profit_california <- total_profit_by_state(salesforecasting, "California")
+print(total_profit_california)
+
+```
+```{r Identify the dependent & independent variables and use reshaping techniques and create a new data frame by joining those variables from your dataset.}
+# Select relevant columns for the new data frame
+selected_columns <- salesforecasting %>% select(`Order ID`,`Customer ID`,Segment,Category,`Sub-Category`,Sales,Quantity,Discount,Profit)
+
+# Summarize the data by Segment and Category
+summary_df <- selected_columns %>%
+group_by(Segment, Category) %>%
+  summarize(Total_Profit = sum(Profit, na.rm = TRUE),
+            Average_Sales = mean(Sales, na.rm = TRUE),
+            Total_Quantity = sum(Quantity, na.rm = TRUE))
+
+# Print the new data frame
+print(summary_df)
+```
+
+
+```{r Remove missing values in your dataset.}
+# Remove rows with missing values
+if(any(is.na(data))) {
+  # Remove rows with missing values
+  data_clean <- data %>% na.omit()
+  
+  # Display the cleaned data
+  print("Data after removing rows with missing values:")
+  print(data_clean)
+} else {
+  print("No missing values")
+}
+
+```
+
+```{r Identify and remove duplicated data in your dataset}
+# Identify duplicated rows based on selected columns
+duplicated_rows <- salesforecasting %>%
+  group_by(`Order ID`, `Order Date`, `Ship Date`, `Customer ID`) %>%
+  filter(!duplicated(`Order ID`))
+
+# Print cleaned dataset
+print(duplicated_rows)
+
+```
+```{r Reorder multiple rows in descending order}
+# Reorder rows based on Sales in descending order
+data_ordered <- salesforecasting %>%
+  arrange(desc(Sales))
+
+# Print the reordered data
+print(data_ordered)
+
+```
+
+```{r Rename some of the column names in your dataset}
+# Rename specific columns
+data_renamed <- salesforecasting %>%
+  rename(
+    Row_ID = `Row ID`,
+    Order_ID = `Order ID`,
+    Order_Date = `Order Date`,
+    Ship_Date = `Ship Date`,
+  )
+
+# Print the data with renamed columns
+print(data_renamed)
+```
+
+
+```{r Add new variables in your data frame by using a mathematical function)}
+
+# Add a new variable by multiplying an existing column by 2
+data_modified <- salesforecasting %>%
+  mutate(SalesTwice = Sales * 2)
+
+# Print the modified data frame with the new variable
+print(data_modified)
+```
+
+```{r Create a training set using random number generator engine}
+set.seed(123)
+
+# Number of rows in the training set
+train_size <- 0.7 * nrow(salesforecasting)  # Adjust 0.7 to your desired proportion
+
+# Generate indices for training set
+train_indices <- sample(seq_len(nrow(salesforecasting)), size = train_size, replace = FALSE)
+
+# Create training set
+train_set <- salesforecasting[train_indices, ]
+
+# Print the first few rows of the training set
+print(head(train_set))
+```
+
+```{r # Print the summary statistics of your dataset}
+summary(salesforecasting)
+
+```
+
+```{r Use any of the numerical variables from the dataset and perform the following statistical functions • Mean • Median • Mode • Range}
+mean_sales <- mean(salesforecasting$Sales, na.rm = TRUE)
+print(mean_sales)
+median_sales <- median(salesforecasting$Sales, na.rm = TRUE)
+print(median_sales)
+mode_sales <- as.numeric(names(sort(table(salesforecasting$Sales), decreasing = TRUE)[1]))
+print(mode_sales)
+range_sales <- range(salesforecasting$Sales, na.rm = TRUE)
+print(range_sales)
+
+```
+
+```{r Plot a scatter plot for any 2 variables in your dataset}
+ggplot(salesforecasting, aes(x = Quantity, y = Sales)) + geom_point() + labs(title = "Scatter Plot of Quantity vs Sales")
+```
+
+```{r Plot a bar plot for any 2 variables in your dataset}
+#ggplot(salesforecasting, aes(x = Category, y = Sales)) + geom_bar(stat = "identity") + labs(title = "Bar Plot of Category vs Sales")
+ggplot(salesforecasting, aes(x = `Sub-Category`, y = Sales)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Sales by Sub-Category", x = "Sub-Category", y = "Total Sales") +
+  theme_minimal()
+```
+
+```{r Find the correlation between any 2 variables by applying Pearson correlation}
+correlation_sales_profit <- cor(salesforecasting$Sales, salesforecasting$Profit, method = "pearson")
+
+# Print the correlation
+print(correlation_sales_profit)
+```
+
